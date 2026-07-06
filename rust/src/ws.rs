@@ -4,6 +4,7 @@ use tokio_tungstenite::{
     connect_async,
     tungstenite::{client::IntoClientRequest, http::header::AUTHORIZATION, Message},
 };
+use std::error::Error;
 use url::Url;
 
 #[derive(Debug, Clone)]
@@ -18,8 +19,20 @@ pub struct WsSubscribe {
 }
 
 impl WsSubscribe {
-    pub fn url(&self) -> Result<String, url::ParseError> {
+    pub fn url(&self) -> Result<String, Box<dyn Error>> {
         let mut url = Url::parse(&self.endpoint)?;
+        if url.scheme() != "ws" && url.scheme() != "wss" {
+            return Err("websocket endpoint must use ws:// or wss://".into());
+        }
+        if self.api_key.is_some() && url.scheme() != "wss" {
+            return Err("authenticated websocket streams require wss://".into());
+        }
+        if url.username() != "" || url.password().is_some() {
+            return Err("websocket endpoint must not include credentials".into());
+        }
+        if url.query().is_some() {
+            return Err("websocket endpoint must not include query parameters".into());
+        }
         url.query_pairs_mut().append_pair("feed", &self.feed);
         if let Some(pair) = &self.pair {
             url.query_pairs_mut().append_pair("pair", pair);

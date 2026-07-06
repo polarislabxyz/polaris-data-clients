@@ -1,10 +1,13 @@
 import WebSocket from "ws";
 import type { MarketDataEvent, SubscribeOptions } from "./types.js";
 
-function cleanEndpoint(endpoint: string): URL {
+function cleanEndpoint(endpoint: string, hasApiKey: boolean): URL {
   const url = new URL(endpoint);
   if (url.protocol !== "ws:" && url.protocol !== "wss:") {
     throw new Error("endpoint must use ws:// or wss://");
+  }
+  if (hasApiKey && url.protocol !== "wss:") {
+    throw new Error("authenticated streams require wss://");
   }
   if (url.username || url.password) {
     throw new Error("endpoint must not include username or password");
@@ -16,7 +19,7 @@ function cleanEndpoint(endpoint: string): URL {
 }
 
 export function buildSubscribeUrl(options: SubscribeOptions): string {
-  const url = cleanEndpoint(options.endpoint);
+  const url = cleanEndpoint(options.endpoint, Boolean(options.apiKey));
   url.searchParams.set("feed", options.feed);
   if (options.pair) url.searchParams.set("pair", options.pair);
   if (options.pool) url.searchParams.set("pool", options.pool);

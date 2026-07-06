@@ -2,8 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SOURCE="/home/polaris-pm/obsidian-polaris/misc/polaris-data-gateway-proto/protos/data_gateway.proto"
 TARGET="${ROOT}/proto/polaris/data_gateway/v1/data_gateway.proto"
 
-diff -u "${SOURCE}" "${TARGET}"
-echo "proto mirror is in sync"
+python3 "${ROOT}/scripts/validate-public-proto.py" "${TARGET}"
+echo "public proto contract is valid"

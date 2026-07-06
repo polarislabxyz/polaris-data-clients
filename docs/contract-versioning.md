@@ -15,5 +15,6 @@ A new major contract is required for:
 - changing enum semantics;
 - changing filter behavior in a way that existing clients cannot safely ignore.
 
-Internal backend NATS subjects are not public contracts. Public clients should
-depend only on the documented WebSocket JSON and gRPC protobuf contracts.
+Internal transport and storage implementation details are not public contracts.
+Public clients should depend only on the documented WebSocket JSON and gRPC
+protobuf contracts.

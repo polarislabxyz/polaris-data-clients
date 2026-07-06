@@ -1,17 +1,21 @@
 # Protocol Buffers
 
-`proto/polaris/data_gateway/v1/data_gateway.proto` is a mirror of the canonical
-Polaris Data Gateway customer API contract.
+`proto/polaris/data_gateway/v1/data_gateway.proto` is the public market-data
+subset of the Polaris Data Gateway V1 contract.
 
-Canonical source:
+It intentionally includes only:
 
 ```text
-/home/polaris-pm/obsidian-polaris/misc/polaris-data-gateway-proto/protos/data_gateway.proto
+swaps
+liquidity_book
+quote_surface
+depth
 ```
 
-Do not hand-edit the mirrored proto. Use:
+Private market-maker operational streams are not part of this public proto.
+
+Before publishing changes, run:
 
 ```bash
-bash scripts/sync-proto-from-obsidian.sh
 bash scripts/check-proto-sync.sh
 ```

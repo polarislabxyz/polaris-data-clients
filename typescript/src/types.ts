@@ -30,7 +30,7 @@ export interface Trade {
   amm_label?: string;
   amm_model_type?: string;
   pool?: string;
-  prop_amm_label?: string;
+  venue_label?: string;
   in_mint: string;
   out_mint: string;
   in_symbol?: string;
@@ -41,14 +41,24 @@ export interface Trade {
   out_amount_raw: string | number;
   in_qty?: number;
   out_qty?: number;
+  in_reserve_post_raw?: string | number;
+  out_reserve_post_raw?: string | number;
+  in_reserve_post_qty?: number;
+  out_reserve_post_qty?: number;
   pair_label?: string;
   base_mint?: string;
   quote_mint?: string;
   base_symbol?: string;
   quote_symbol?: string;
   taker_side: "buy_base" | "sell_base" | "unspecified" | string;
+  base_amount_raw?: string | number;
+  quote_amount_raw?: string | number;
   base_qty?: number;
   quote_qty?: number;
+  base_reserve_post_raw?: string | number;
+  quote_reserve_post_raw?: string | number;
+  base_reserve_post_qty?: number;
+  quote_reserve_post_qty?: number;
   trade_price?: number;
   metadata_status: string;
 }
@@ -57,6 +67,62 @@ export interface SwapUpdateEvent {
   processed_at_ms: number;
   contract_version: typeof MARKET_DATA_CONTRACT_VERSION | string;
   trade: Trade;
+}
+
+export interface DepthLevel {
+  level: number;
+  base_size_raw: string | number;
+  bid_price?: number;
+  ask_price?: number;
+  visible_bid_pool_count: number;
+  visible_ask_pool_count: number;
+  bid_base_size_raw: string | number;
+  ask_base_size_raw: string | number;
+}
+
+export interface DepthSnapshot {
+  timestamp_ms: number;
+  slot: number;
+  pair: string;
+  surface_seq: number;
+  levels: DepthLevel[];
+  simulation_profile: MarketDataProfile | string;
+}
+
+export interface DepthEvent {
+  snapshot: boolean;
+  processed_at_ms: number;
+  snapshot_data: DepthSnapshot;
+  contract_version?: typeof MARKET_DATA_CONTRACT_VERSION | string;
+}
+
+export interface QuoteSurfaceLevel {
+  level: number;
+  sim_base_amount_in: string | number;
+  bid_price?: number;
+  ask_price?: number;
+  bid_success: boolean;
+  ask_success: boolean;
+  bid_base_amount_in: string | number;
+  ask_base_amount_out: string | number;
+}
+
+export interface QuoteSurface {
+  slot: number;
+  timestamp_ms: number;
+  pair: string;
+  pool_address: string;
+  program_id: string;
+  update_seq: number;
+  levels: QuoteSurfaceLevel[];
+  simulation_profile: MarketDataProfile | string;
+}
+
+export interface QuoteSurfaceEvent {
+  snapshot: boolean;
+  processed_at_ms: number;
+  surface: QuoteSurface;
+  contract_version?: typeof MARKET_DATA_CONTRACT_VERSION | string;
 }
 
 export interface LiquidityPoint {
@@ -116,4 +182,5 @@ export interface LiquidityBookEvent {
 export type MarketDataEvent =
   | { swap: SwapUpdateEvent }
   | { liquidity_book: LiquidityBookEvent }
-  | Record<string, unknown>;
+  | { quote_surface: QuoteSurfaceEvent }
+  | { depth: DepthEvent };

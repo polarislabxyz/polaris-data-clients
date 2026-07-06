@@ -44,7 +44,11 @@ pub async fn connect_with_bearer(
     PolarisDataGatewayClient<InterceptedService<Channel, BearerAuth>>,
     Box<dyn std::error::Error + Send + Sync>,
 > {
-    let channel = Endpoint::from_shared(endpoint.as_ref().to_owned())?
+    let endpoint = endpoint.as_ref();
+    if endpoint.starts_with("http://") {
+        return Err("authenticated gRPC streams require https://".into());
+    }
+    let channel = Endpoint::from_shared(endpoint.to_owned())?
         .connect()
         .await?;
     Ok(PolarisDataGatewayClient::with_interceptor(
