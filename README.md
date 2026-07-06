@@ -45,3 +45,15 @@ POLARIS_DATA_PAIR=SOL-USDC \
 
 Do not put paid API keys in browser code. Public browser integrations should
 use `wss://public-data.polarislab.xyz/ws/public`.
+
+## gRPC quickstart
+
+Rust gRPC examples use `POLARIS_DATA_GRPC_URL`. If `POLARIS_DATA_API_KEY` is
+set, the example sends it as bearer auth metadata.
+
+```bash
+cd rust
+POLARIS_DATA_GRPC_URL=https://data.polarislab.xyz \
+POLARIS_DATA_API_KEY=YOUR_KEY \
+  cargo run --example grpc-subscribe-swaps
+```
