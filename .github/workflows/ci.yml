@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Check proto mirror
+        run: bash scripts/check-proto-sync.sh
+
+      - name: TypeScript install
+        working-directory: typescript
+        run: pnpm install --frozen-lockfile=false
+
+      - name: TypeScript typecheck
+        working-directory: typescript
+        run: pnpm typecheck
+
+      - name: Rust tests
+        working-directory: rust
+        run: cargo test

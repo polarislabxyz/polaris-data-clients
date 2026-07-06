@@ -1,0 +1,334 @@
+syntax = "proto3";
+
+package polaris.data_gateway.v1;
+
+service PolarisDataGateway {
+  rpc Subscribe(SubscribeRequest) returns (stream StreamEvent);
+}
+
+enum Feed {
+  FEED_UNSPECIFIED = 0;
+  FEED_DEPTH = 1;
+  reserved 2, 3, 4, 5, 6;
+  FEED_QUOTE_SURFACE = 8;
+  FEED_SWAPS = 9;
+  FEED_LIQUIDITY_BOOK = 10;
+  FEED_FILL_UPDATE = 11;
+  FEED_INVENTORY_UPDATE = 12;
+  FEED_QUOTE_UPDATE = 13;
+}
+
+message SubscribeRequest {
+  reserved 1, 3;
+  repeated Feed feeds = 2;
+  repeated string pairs = 4;
+  repeated string pools = 5;
+  repeated string sources = 6;
+  repeated string profiles = 7;
+}
+
+message StreamEvent {
+  reserved 4, 5, 6, 7, 8;
+  oneof event {
+    Hello hello = 1;
+    Subscribed subscribed = 2;
+    DepthEvent depth = 3;
+    FillUpdateEvent fill_update = 9;
+    QuoteSurfaceEvent quote_surface = 10;
+    SwapUpdateEvent swap = 11;
+    LiquidityBookEvent liquidity_book = 12;
+    InventoryUpdateEvent inventory_update = 13;
+    QuoteUpdateEvent quote_update = 14;
+  }
+}
+
+message Hello {
+  uint64 depth_cached = 1;
+  uint64 surface_cached = 2;
+  uint64 inventory_cached = 3;
+  uint64 quote_update_cached = 4;
+  string contract_version = 5;
+  repeated Feed feed_capabilities = 6;
+}
+
+message Subscribed {
+  reserved 2;
+  repeated Feed feeds = 1;
+  repeated string pairs = 3;
+  repeated string pools = 4;
+  repeated string sources = 5;
+  repeated string profiles = 6;
+  string contract_version = 7;
+}
+
+message DepthEvent {
+  reserved 2;
+  bool snapshot = 1;
+  uint64 processed_at_ms = 3;
+  DepthSnapshot snapshot_data = 4;
+}
+
+message DepthSnapshot {
+  reserved 3;
+  uint64 timestamp_ms = 1;
+  uint64 slot = 2;
+  string pair = 4;
+  uint64 surface_seq = 5;
+  repeated DepthLevel levels = 6;
+  string simulation_profile = 7;
+}
+
+message DepthLevel {
+  uint32 level = 1;
+  uint64 base_size_raw = 2;
+  optional double bid_price = 3;
+  optional double ask_price = 4;
+  string best_bid_pool = 5;
+  string best_ask_pool = 6;
+  uint32 visible_bid_pool_count = 7;
+  uint32 visible_ask_pool_count = 8;
+  string best_bid_prop_amm_label = 9;
+  string best_ask_prop_amm_label = 10;
+  uint64 bid_base_size_raw = 11;
+  uint64 ask_base_size_raw = 12;
+}
+
+message QuoteSurfaceEvent {
+  reserved 2;
+  bool snapshot = 1;
+  uint64 processed_at_ms = 3;
+  PropAmmQuoteSurface surface = 4;
+}
+
+message LiquidityBookEvent {
+  bool snapshot = 1;
+  uint64 processed_at_ms = 2;
+  LiquidityBookSnapshot book = 3;
+}
+
+message LiquidityBookSnapshot {
+  uint64 published_at_ms = 1;
+  uint64 source_timestamp_ms = 2;
+  uint64 source_age_ms = 3;
+  string pair = 4;
+  string profile = 5;
+  uint64 current_slot = 6;
+  optional double price = 7;
+  LiquidityBook aggregate = 8;
+  repeated LiquidityPool pools = 9;
+  repeated DepthBand depth_bands = 10;
+  string contract_version = 11;
+}
+
+message LiquidityBook {
+  string id = 1;
+  string label = 2;
+  string display_name = 3;
+  repeated LiquidityPoint bids = 4;
+  repeated LiquidityPoint asks = 5;
+  SpreadSummary spreads = 6;
+}
+
+message LiquidityPool {
+  string id = 1;
+  string label = 2;
+  string display_name = 3;
+  PoolStatus status = 4;
+  optional uint64 last_update_slot = 5;
+  optional uint64 slot_lag = 6;
+  optional uint64 source_timestamp_ms = 7;
+  optional uint64 source_age_ms = 8;
+  repeated LiquidityPoint bids = 9;
+  repeated LiquidityPoint asks = 10;
+  SpreadSummary spreads = 11;
+}
+
+enum PoolStatus {
+  POOL_STATUS_UNSPECIFIED = 0;
+  POOL_STATUS_LIVE = 1;
+  POOL_STATUS_STALE = 2;
+  POOL_STATUS_NO_DATA = 3;
+}
+
+message LiquidityPoint {
+  double price = 1;
+  double cumulative_base = 2;
+}
+
+message SpreadSummary {
+  optional double best_abs = 1;
+  optional double best_bps = 2;
+  repeated SpreadAtDepth by_depth = 3;
+}
+
+message SpreadAtDepth {
+  double base = 1;
+  double abs = 2;
+  double bps = 3;
+}
+
+message DepthBand {
+  uint32 bps = 1;
+  repeated DepthBandPool pools = 2;
+}
+
+message DepthBandPool {
+  string id = 1;
+  string label = 2;
+  double bid_base = 3;
+  double ask_base = 4;
+}
+
+message PropAmmQuoteSurface {
+  reserved 3;
+  uint64 slot = 1;
+  uint64 timestamp_ms = 2;
+  string pair = 4;
+  string pool_address = 5;
+  string program_id = 6;
+  uint32 update_seq = 7;
+  uint64 pool_sequence_num = 8;
+  uint64 account_update_received_at_ms = 9;
+  uint64 simulation_started_at_ms = 10;
+  uint64 simulation_completed_at_ms = 11;
+  string adapter_version = 12;
+  string quote_source = 13;
+  string validation_status = 14;
+  string trigger_account = 15;
+  string trigger_signature = 16;
+  repeated PropAmmQuoteLevel levels = 17;
+  string prop_amm_label = 18;
+  string simulation_profile = 19;
+}
+
+message PropAmmQuoteLevel {
+  uint32 level = 1;
+  uint64 sim_base_amount_in = 2;
+  optional double bid_price = 3;
+  optional double ask_price = 4;
+  bool bid_success = 5;
+  bool ask_success = 6;
+  uint64 bid_base_amount_in = 7;
+  uint64 ask_base_amount_out = 8;
+}
+
+message SwapUpdateEvent {
+  uint64 processed_at_ms = 1;
+  Trade trade = 2;
+  string contract_version = 3;
+}
+
+message FillUpdateEvent {
+  uint64 processed_at_ms = 1;
+  Trade trade = 2;
+  string contract_version = 3;
+}
+
+enum TakerSide {
+  TAKER_SIDE_UNSPECIFIED = 0;
+  TAKER_SIDE_BUY_BASE = 1;
+  TAKER_SIDE_SELL_BASE = 2;
+}
+
+message Trade {
+  string canonical_event_id = 1;
+  string signature = 2;
+  uint64 slot = 3;
+  uint32 tx_index = 4;
+  uint32 instruction_index = 5;
+  string instruction_path = 6;
+  string fee_payer = 7;
+  string source = 8;
+  string source_instruction = 9;
+  string source_event_type = 10;
+  optional uint32 route_step_index = 11;
+  string amm_program = 12;
+  optional string amm_label = 13;
+  optional string amm_model_type = 14;
+  optional string pool = 15;
+  optional string prop_amm_label = 16;
+  string in_mint = 17;
+  string out_mint = 18;
+  optional string in_symbol = 19;
+  optional string out_symbol = 20;
+  optional uint32 in_decimals = 21;
+  optional uint32 out_decimals = 22;
+  uint64 in_amount_raw = 23;
+  uint64 out_amount_raw = 24;
+  optional double in_qty = 25;
+  optional double out_qty = 26;
+  optional uint64 in_reserve_post_raw = 27;
+  optional uint64 out_reserve_post_raw = 28;
+  optional double in_reserve_post_qty = 29;
+  optional double out_reserve_post_qty = 30;
+  optional string pair_label = 31;
+  optional string base_mint = 32;
+  optional string quote_mint = 33;
+  optional string base_symbol = 34;
+  optional string quote_symbol = 35;
+  TakerSide taker_side = 36;
+  optional uint64 base_amount_raw = 37;
+  optional uint64 quote_amount_raw = 38;
+  optional double base_qty = 39;
+  optional double quote_qty = 40;
+  optional uint64 base_reserve_post_raw = 41;
+  optional uint64 quote_reserve_post_raw = 42;
+  optional double base_reserve_post_qty = 43;
+  optional double quote_reserve_post_qty = 44;
+  optional double trade_price = 45;
+  string metadata_status = 46;
+}
+
+message InventoryUpdateEvent {
+  bool snapshot = 1;
+  uint64 processed_at_ms = 2;
+  InventoryUpdate inventory = 3;
+}
+
+message InventoryUpdate {
+  reserved 8;
+  string pool_address = 1;
+  string signature = 2;
+  uint64 slot = 3;
+  uint32 tx_index = 4;
+  uint32 instruction_index = 5;
+  string instruction_path = 6;
+  string order_key = 7;
+  string token_a_mint = 9;
+  uint64 token_a_reserve_post = 10;
+  string token_b_mint = 11;
+  uint64 token_b_reserve_post = 12;
+  uint64 timestamp_ms = 13;
+  string prop_amm_label = 14;
+  string canonical_event_id = 15;
+}
+
+message QuoteUpdateEvent {
+  bool snapshot = 1;
+  uint64 processed_at_ms = 2;
+  QuoteUpdate quote_update = 3;
+}
+
+message QuoteUpdate {
+  reserved 18;
+  string signature = 1;
+  uint64 slot = 2;
+  string pool_address = 3;
+  uint64 sequence_num = 4;
+  uint64 mid_price_lamports = 5;
+  uint64 half_spread_lamports = 6;
+  uint64 skew_factor_lamports_per_token = 7;
+  optional uint64 target_x_tokens = 8;
+  optional uint64 curve_max_capacity_tokens = 9;
+  repeated uint32 curve_bid_multipliers = 10;
+  repeated uint32 curve_ask_multipliers = 11;
+  optional uint64 rebalance_activation_threshold_tokens = 12;
+  optional uint64 rebalance_coverage_percent = 13;
+  repeated uint32 rebalance_tighten_spread_multipliers = 14;
+  repeated uint32 rebalance_widen_spread_multipliers = 15;
+  optional uint64 timestamp_ms = 16;
+  string instruction_type = 17;
+  string fee_payer = 19;
+  uint64 tx_fee = 20;
+  string prop_amm_label = 21;
+}
