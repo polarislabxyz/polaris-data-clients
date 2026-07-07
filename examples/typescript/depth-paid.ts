@@ -16,6 +16,7 @@ const handle = subscribeMarketData(
     profile: (process.env.POLARIS_DATA_PROFILE as "fast" | "dense" | undefined) ?? "dense",
   },
   (event) => {
+    if (event.type !== "depth" && event.type !== "depth_snapshot") return;
     console.log(JSON.stringify(event, null, 2));
     handle.close();
   },

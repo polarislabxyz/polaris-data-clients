@@ -123,8 +123,27 @@ message SwapUpdateEvent {
   string contract_version = 3;
 }
 
+message TokenQuantity {
+  string mint = 1;
+  string symbol = 2;
+  uint32 decimals = 3;
+  string amount = 4;
+  double ui_amount = 5;
+  string ui_amount_string = 6;
+}
+
 message Trade {
-  string canonical_event_id = 1;
+  reserved 11, 13, 14, 16, 17 to 35, 37 to 47;
+  reserved "route_step_index", "amm_label", "amm_model_type", "venue_label",
+      "in_mint", "out_mint", "in_symbol", "out_symbol", "in_decimals",
+      "out_decimals", "in_amount_raw", "out_amount_raw", "in_qty", "out_qty",
+      "in_reserve_post_raw", "out_reserve_post_raw", "in_reserve_post_qty",
+      "out_reserve_post_qty", "pair_label", "base_mint", "quote_mint",
+      "base_symbol", "quote_symbol", "base_amount_raw", "quote_amount_raw",
+      "base_qty", "quote_qty", "base_reserve_post_raw",
+      "quote_reserve_post_raw", "base_reserve_post_qty",
+      "quote_reserve_post_qty", "metadata_status", "timestamp_ms";
+  string event_id = 1;
   string signature = 2;
   uint64 slot = 3;
   uint32 tx_index = 4;
@@ -132,44 +151,18 @@ message Trade {
   string instruction_path = 6;
   string fee_payer = 7;
   string source = 8;
-  string source_instruction = 9;
-  string source_event_type = 10;
-  optional uint32 route_step_index = 11;
-  string amm_program = 12;
-  optional string amm_label = 13;
-  optional string amm_model_type = 14;
-  optional string pool = 15;
-  optional string venue_label = 16;
-  string in_mint = 17;
-  string out_mint = 18;
-  optional string in_symbol = 19;
-  optional string out_symbol = 20;
-  optional uint32 in_decimals = 21;
-  optional uint32 out_decimals = 22;
-  uint64 in_amount_raw = 23;
-  uint64 out_amount_raw = 24;
-  optional double in_qty = 25;
-  optional double out_qty = 26;
-  optional uint64 in_reserve_post_raw = 27;
-  optional uint64 out_reserve_post_raw = 28;
-  optional double in_reserve_post_qty = 29;
-  optional double out_reserve_post_qty = 30;
-  optional string pair_label = 31;
-  optional string base_mint = 32;
-  optional string quote_mint = 33;
-  optional string base_symbol = 34;
-  optional string quote_symbol = 35;
+  reserved 9, 10;
+  reserved "source_instruction", "source_event_type";
+  optional string amm_program = 12;
+  optional string pool_address = 15;
   TakerSide taker_side = 36;
-  optional uint64 base_amount_raw = 37;
-  optional uint64 quote_amount_raw = 38;
-  optional double base_qty = 39;
-  optional double quote_qty = 40;
-  optional uint64 base_reserve_post_raw = 41;
-  optional uint64 quote_reserve_post_raw = 42;
-  optional double base_reserve_post_qty = 43;
-  optional double quote_reserve_post_qty = 44;
-  optional double trade_price = 45;
-  string metadata_status = 46;
+  optional string amm = 48;
+  optional string amm_model = 49;
+  uint64 processed_at_ms = 50;
+  string pair = 51;
+  TokenQuantity base = 52;
+  TokenQuantity quote = 53;
+  double price = 54;
 }
 
 enum TakerSide {

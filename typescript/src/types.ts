@@ -14,8 +14,17 @@ export interface SubscribeOptions {
   apiKey?: string;
 }
 
+export interface TokenQuantity {
+  mint: string;
+  symbol: string;
+  decimals: number;
+  amount: string;
+  ui_amount: number;
+  ui_amount_string: string;
+}
+
 export interface Trade {
-  canonical_event_id: string;
+  event_id: string;
   signature: string;
   slot: number;
   tx_index: number;
@@ -23,47 +32,20 @@ export interface Trade {
   instruction_path: string;
   fee_payer: string;
   source: string;
-  source_instruction: string;
-  source_event_type: string;
-  route_step_index?: number;
-  amm_program: string;
-  amm_label?: string;
-  amm_model_type?: string;
-  pool?: string;
-  venue_label?: string;
-  in_mint: string;
-  out_mint: string;
-  in_symbol?: string;
-  out_symbol?: string;
-  in_decimals?: number;
-  out_decimals?: number;
-  in_amount_raw: string | number;
-  out_amount_raw: string | number;
-  in_qty?: number;
-  out_qty?: number;
-  in_reserve_post_raw?: string | number;
-  out_reserve_post_raw?: string | number;
-  in_reserve_post_qty?: number;
-  out_reserve_post_qty?: number;
-  pair_label?: string;
-  base_mint?: string;
-  quote_mint?: string;
-  base_symbol?: string;
-  quote_symbol?: string;
-  taker_side: "buy_base" | "sell_base" | "unspecified" | string;
-  base_amount_raw?: string | number;
-  quote_amount_raw?: string | number;
-  base_qty?: number;
-  quote_qty?: number;
-  base_reserve_post_raw?: string | number;
-  quote_reserve_post_raw?: string | number;
-  base_reserve_post_qty?: number;
-  quote_reserve_post_qty?: number;
-  trade_price?: number;
-  metadata_status: string;
+  amm_program?: string;
+  amm?: string;
+  amm_model?: string;
+  pool_address?: string;
+  processed_at_ms: number;
+  pair: string;
+  base: TokenQuantity;
+  quote: TokenQuantity;
+  taker_side: "buy_base" | "sell_base";
+  price: number;
 }
 
 export interface SwapUpdateEvent {
+  type: "swap";
   processed_at_ms: number;
   contract_version: typeof MARKET_DATA_CONTRACT_VERSION | string;
   trade: Trade;
@@ -90,9 +72,9 @@ export interface DepthSnapshot {
 }
 
 export interface DepthEvent {
-  snapshot: boolean;
+  type: "depth" | "depth_snapshot";
   processed_at_ms: number;
-  snapshot_data: DepthSnapshot;
+  snapshot: DepthSnapshot;
   contract_version?: typeof MARKET_DATA_CONTRACT_VERSION | string;
 }
 
@@ -119,7 +101,7 @@ export interface QuoteSurface {
 }
 
 export interface QuoteSurfaceEvent {
-  snapshot: boolean;
+  type: "quote_surface" | "quote_surface_snapshot";
   processed_at_ms: number;
   surface: QuoteSurface;
   contract_version?: typeof MARKET_DATA_CONTRACT_VERSION | string;
@@ -173,14 +155,43 @@ export interface LiquidityBookSnapshot {
   contract_version: typeof MARKET_DATA_CONTRACT_VERSION | string;
 }
 
-export interface LiquidityBookEvent {
-  snapshot: boolean;
-  processed_at_ms: number;
-  book: LiquidityBookSnapshot;
+export type LiquidityBookEvent = { type: "liquidity_book" } & LiquidityBookSnapshot;
+
+export interface LiquidityBookSnapshotEvent {
+  type: "liquidity_book_snapshot";
+  snapshot: LiquidityBookSnapshot;
+}
+
+export interface HelloEvent {
+  type: "hello";
+  contract_version: typeof MARKET_DATA_CONTRACT_VERSION | string;
+  feed_capabilities: MarketDataFeed[];
+  depth_cached?: number;
+  surface_cached?: number;
+}
+
+export interface SubscribedEvent {
+  type: "subscribed";
+  contract_version: typeof MARKET_DATA_CONTRACT_VERSION | string;
+  filter: unknown;
+}
+
+export interface PongEvent {
+  type: "pong";
+}
+
+export interface ErrorEvent {
+  type: "error";
+  error: string;
 }
 
 export type MarketDataEvent =
-  | { swap: SwapUpdateEvent }
-  | { liquidity_book: LiquidityBookEvent }
-  | { quote_surface: QuoteSurfaceEvent }
-  | { depth: DepthEvent };
+  | HelloEvent
+  | SubscribedEvent
+  | PongEvent
+  | ErrorEvent
+  | SwapUpdateEvent
+  | LiquidityBookEvent
+  | LiquidityBookSnapshotEvent
+  | QuoteSurfaceEvent
+  | DepthEvent;

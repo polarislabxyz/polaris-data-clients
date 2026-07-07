@@ -51,6 +51,7 @@ impl WsSubscribe {
 }
 
 pub async fn read_one_json(subscribe: WsSubscribe) -> Result<Value, Box<dyn std::error::Error>> {
+    let requested_feed = subscribe.feed.clone();
     let mut request = subscribe.url()?.into_client_request()?;
     if let Some(api_key) = &subscribe.api_key {
         request.headers_mut().insert(
@@ -63,13 +64,17 @@ pub async fn read_one_json(subscribe: WsSubscribe) -> Result<Value, Box<dyn std:
         match message? {
             Message::Text(text) => {
                 let value = serde_json::from_str(&text)?;
-                let _ = ws.close(None).await;
-                return Ok(value);
+                if is_requested_data_message(&value, &requested_feed)? {
+                    let _ = ws.close(None).await;
+                    return Ok(value);
+                }
             }
             Message::Binary(bytes) => {
                 let value = serde_json::from_slice(&bytes)?;
-                let _ = ws.close(None).await;
-                return Ok(value);
+                if is_requested_data_message(&value, &requested_feed)? {
+                    let _ = ws.close(None).await;
+                    return Ok(value);
+                }
             }
             Message::Ping(bytes) => ws.send(Message::Pong(bytes)).await?,
             Message::Close(_) => break,
@@ -77,4 +82,29 @@ pub async fn read_one_json(subscribe: WsSubscribe) -> Result<Value, Box<dyn std:
         }
     }
     Err("websocket closed before a JSON message arrived".into())
+}
+
+fn is_requested_data_message(value: &Value, feed: &str) -> Result<bool, Box<dyn Error>> {
+    let Some(message_type) = value.get("type").and_then(Value::as_str) else {
+        return Ok(false);
+    };
+    if message_type == "error" {
+        let error = value
+            .get("error")
+            .and_then(Value::as_str)
+            .unwrap_or("gateway returned an error");
+        return Err(error.to_owned().into());
+    }
+    let wanted = match feed {
+        "swaps" => message_type == "swap",
+        "liquidity_book" => {
+            message_type == "liquidity_book" || message_type == "liquidity_book_snapshot"
+        }
+        "quote_surface" => {
+            message_type == "quote_surface" || message_type == "quote_surface_snapshot"
+        }
+        "depth" => message_type == "depth" || message_type == "depth_snapshot",
+        _ => message_type != "hello" && message_type != "subscribed" && message_type != "pong",
+    };
+    Ok(wanted)
 }

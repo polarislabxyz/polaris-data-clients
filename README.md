@@ -11,8 +11,11 @@ The customer-facing market-data feeds are:
 | `quote_surface` | Immediate per-pool simulated quote surface |
 | `depth` | Compact pair-level synthetic aggregate depth |
 
-WebSocket is the first-class integration path for browser and lightweight server
-clients. gRPC is available for typed streaming integrations.
+WebSocket is the first-class integration path for lightweight server clients.
+gRPC is available for typed streaming integrations.
+WebSocket JSON messages use a top-level `type` discriminator, for example
+`{ "type": "swap", ... }` or `{ "type": "liquidity_book", ... }`. Initial
+`hello` / `subscribed` messages are control messages, not feed data.
 
 The protobuf contract in `proto/polaris/data_gateway/v1/data_gateway.proto` is
 the public market-data subset of `polaris.data_gateway.v1`.
@@ -24,16 +27,7 @@ are not published yet.
 
 ## WebSocket quickstart
 
-Public liquidity book:
-
-```bash
-cd typescript
-pnpm install
-PUBLIC_POLARIS_DATA_WS_URL=wss://public-data.polarislab.xyz/ws/public \
-  pnpm example:liquidity-book
-```
-
-Approved paid access:
+Approved data access:
 
 ```bash
 cd typescript
@@ -45,8 +39,9 @@ POLARIS_DATA_PAIR=SOL-USDC \
   pnpm example:paid
 ```
 
-Do not put paid API keys in browser code. Public browser integrations should
-use `wss://public-data.polarislab.xyz/ws/public`.
+Do not put paid API keys in browser code. For browser/dashboard access, use a
+server-side proxy or contact Polaris for an approved deployment-specific
+browser endpoint.
 
 ## gRPC quickstart
 

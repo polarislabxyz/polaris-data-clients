@@ -18,6 +18,7 @@ const handle = subscribeMarketData(
     profile: (process.env.POLARIS_DATA_PROFILE as "fast" | "dense" | undefined) ?? "fast",
   },
   (event) => {
+    if (event.type !== "quote_surface" && event.type !== "quote_surface_snapshot") return;
     console.log(JSON.stringify(event, null, 2));
     handle.close();
   },
