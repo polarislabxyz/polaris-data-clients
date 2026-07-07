@@ -10,6 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout canonical gateway proto
+        uses: actions/checkout@v4
+        with:
+          repository: polarislabxyz/obsidian-polaris
+          path: obsidian-polaris
+          token: ${{ secrets.POLARIS_REPO_TOKEN || github.token }}
+          sparse-checkout: misc/polaris-data-gateway-proto/protos/data_gateway.proto
+          sparse-checkout-cone-mode: false
+
       - uses: pnpm/action-setup@v4
         with:
           version: 11.8.0
@@ -24,6 +33,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
       - name: Check proto mirror
+        env:
+          POLARIS_GATEWAY_PROTO: ${{ github.workspace }}/obsidian-polaris/misc/polaris-data-gateway-proto/protos/data_gateway.proto
         run: bash scripts/check-proto-sync.sh
 
       - name: TypeScript install

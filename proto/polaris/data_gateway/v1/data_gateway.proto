@@ -61,7 +61,6 @@ message DepthEvent {
   bool snapshot = 1;
   uint64 processed_at_ms = 3;
   DepthSnapshot snapshot_data = 4;
-  string contract_version = 5;
 }
 
 message DepthSnapshot {
@@ -91,7 +90,6 @@ message QuoteSurfaceEvent {
   bool snapshot = 1;
   uint64 processed_at_ms = 3;
   QuoteSurface surface = 4;
-  string contract_version = 5;
 }
 
 message QuoteSurface {
