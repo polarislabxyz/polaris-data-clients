@@ -16,7 +16,9 @@ jobs:
           repository: polarislabxyz/obsidian-polaris
           path: obsidian-polaris
           token: ${{ secrets.POLARIS_REPO_TOKEN || github.token }}
-          sparse-checkout: misc/polaris-data-gateway-proto/protos/data_gateway.proto
+          sparse-checkout: |
+            misc/polaris-data-gateway-proto/protos/data_gateway.proto
+            apps/polaris-analytics-api/openapi.yaml
           sparse-checkout-cone-mode: false
 
       - uses: pnpm/action-setup@v4
@@ -44,6 +46,16 @@ jobs:
       - name: TypeScript typecheck
         working-directory: typescript
         run: pnpm typecheck
+
+      - name: Check generated analytics types
+        working-directory: typescript
+        env:
+          POLARIS_ANALYTICS_OPENAPI: ${{ github.workspace }}/obsidian-polaris/apps/polaris-analytics-api/openapi.yaml
+        run: pnpm check:analytics
+
+      - name: TypeScript tests
+        working-directory: typescript
+        run: pnpm test
 
       - name: TypeScript build
         working-directory: typescript
