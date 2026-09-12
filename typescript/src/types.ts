@@ -98,6 +98,8 @@ export interface QuoteSurface {
   update_seq: number;
   levels: QuoteSurfaceLevel[];
   simulation_profile: MarketDataProfile | string;
+  base_mint?: string;
+  quote_mint?: string;
 }
 
 export interface QuoteSurfaceEvent {

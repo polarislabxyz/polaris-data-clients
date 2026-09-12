@@ -6,3 +6,5 @@
 - Market-data feeds: `swaps`, `liquidity_book`, `quote_surface`, `depth`.
 - WebSocket and gRPC expose the same market-data feed names.
 - Breaking contract changes require a new major contract version.
+- Additive `quote_surface` fields `base_mint` and `quote_mint` (protobuf tags
+  23 and 24). Empty when the gateway catalog row has no mints. Package `v0.1.1`.

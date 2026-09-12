@@ -102,6 +102,8 @@ message QuoteSurface {
   uint32 update_seq = 7;
   repeated QuoteLevel levels = 17;
   string simulation_profile = 19;
+  string base_mint = 23;
+  string quote_mint = 24;
 }
 
 message QuoteLevel {
